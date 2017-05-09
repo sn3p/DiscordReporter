@@ -1,31 +1,17 @@
-//////////////////////////////////////////////////////////////////////\
-//                                                                   /|
-//  Unreal Tournament IRC Reporter - Copyright © Thomas Pajor, 2001  /|
-//  ---------------------------------------------------------------  /|
-//  Programmed by [Mv]DarkViper, Enhanced by Rush (rush@u.one.pl)    /|
-//  And given spice by Altgamer (alt@rivalflame.com)                 /|
-//  Gambino Edition by sn3p (snap@gambino.nl)                        /|
-//                                                                   /|
-///////////////////////////////////////////////////////////////////////
-
-class DiscordReporterStats expands UBrowserBufferedTCPLink;
+class DiscordReporterStats extends UBrowserBufferedTCPLink;
 // Switched class due to error.
-// class DiscordReporterStats expands Actor;
+// class DiscordReporterStats extends Actor;
 
-// Link to our IRC Interface (IMPORTANT)
-var DiscordReporterIRCLink Link;
-var DiscordReporterIRCLink2 Link2;
+var DiscordReporterLink Link;
 var DiscordReporterSpectator Spec;
 var DiscordReporterConfig conf;
 
 var LevelInfo Level;
 var GameReplicationInfo GRI;
 
-// Declare some Variables
 var string ircBold;
 var string ircColor;
 var string ircUnderline;
-var string ircClear;
 var bool bBTScores;
 
 // Initialization Function
@@ -33,7 +19,7 @@ function Initialize()
 {
   if ((Left(string(Level), 3)=="BT-" || Left(string(Level), 5)=="CTF-BT-") && string(Level.Game.class)!="BotPack.CTFGame")
     bBTScores=True;
-  Log("++ [Mv]: Stats Actor Initialized!");
+  Log("++ Stats Actor Initialized!");
 }
 
 // Recieve General Messages (Joins, Parts, etc)
@@ -42,12 +28,12 @@ function InClientMessage(coerce string S, optional name Type, optional bool bBee
 }
 
 // Recieve Say Messages
-function InTeamMessage(PlayerReplicationInfo PRI, coerce string S, name Type, optional bool bBeep )
+function InTeamMessage(PlayerReplicationInfo PRI, coerce string S, name Type, optional bool bBeep)
 {
 }
 
 // Recieve Localized Messages
-function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
+function InLocalizedMessage(class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject)
 {
 }
 
@@ -56,7 +42,7 @@ function InVoiceMessage(PlayerReplicationInfo Sender, PlayerReplicationInfo Reci
 {
 }
 
-static function string PrePad (coerce string S, int Size, string Pad)
+static function string PrePad(coerce string S, int Size, string Pad)
 {
   if (Len(S) > Size)
     return Left(S, Size-3)$"...";
@@ -65,7 +51,7 @@ static function string PrePad (coerce string S, int Size, string Pad)
   return S;
 }
 
-static function string PostPad (coerce string S, int Size, string Pad)
+static function string PostPad(coerce string S, int Size, string Pad)
 {
   if (Len(S) > Size)
     return Left(S, Size-3)$"...";
@@ -100,37 +86,47 @@ function String GetClientVoiceMessageString(PlayerReplicationInfo Sender, Player
   if (messagetype == 'ACK')
     sStr = sStr $ ChallengeVoicePack(V).static.GetAckString(messageID);
   else
+  {
+    if (recipient != none)
     {
-      if (recipient != none)
-	{
-	  sStr = sStr $ ChallengeVoicePack(V).GetCallSign(Recipient);
-	}
-      if (messagetype == 'FRIENDLYFIRE')
-	{
-	  sStr = sStr $ ChallengeVoicePack(V).static.GetFFireString(messageID);
-	}
-      else if (messagetype == 'TAUNT')
-	{
-	  sStr = sStr $ ChallengeVoicePack(V).static.GetTauntString(messageID);
-	}
-      else if (messagetype == 'AUTOTAUNT')
-	{
-	  sStr = sStr $ ChallengeVoicePack(V).static.GetTauntString(messageID);
-	  sStr = "";
-	}
-      else if (messagetype == 'ORDER')
-	{
-	  sStr = sStr $ ChallengeVoicePack(V).static.GetOrderString(messageID, "Deathmatch");
-	}
-      else
-	{
-	  sStr = sStr $ ChallengeVoicePack(V).static.GetOtherString(messageID);
-	}
+      sStr = sStr $ ChallengeVoicePack(V).GetCallSign(Recipient);
     }
+    if (messagetype == 'FRIENDLYFIRE')
+    {
+      sStr = sStr $ ChallengeVoicePack(V).static.GetFFireString(messageID);
+    }
+    else if (messagetype == 'TAUNT')
+    {
+      sStr = sStr $ ChallengeVoicePack(V).static.GetTauntString(messageID);
+    }
+    else if (messagetype == 'AUTOTAUNT')
+    {
+      sStr = sStr $ ChallengeVoicePack(V).static.GetTauntString(messageID);
+      sStr = "";
+    }
+    else if (messagetype == 'ORDER')
+    {
+      sStr = sStr $ ChallengeVoicePack(V).static.GetOrderString(messageID, "Deathmatch");
+    }
+    else
+    {
+      sStr = sStr $ ChallengeVoicePack(V).static.GetOtherString(messageID);
+    }
+  }
+
   V.Destroy();
   return sStr;
 }
 
+// Message formatting
+static function string bold(string S)
+{
+  return "**" $ S $ "**";
+}
+static function string italic(string S)
+{
+  return "__" $ S $ "__";
+}
 
 // IRC Queries
 function QueryMap(string sNick)
@@ -151,8 +147,7 @@ function QueryScore(string sNick)
 
 defaultproperties
 {
-     ircBold=""
-     ircColor=""
-     ircUnderline=""
-     ircClear=""
+  ircBold=""
+  ircColor=""
+  ircUnderline=""
 }

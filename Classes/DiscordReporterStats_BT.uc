@@ -1,14 +1,4 @@
-//////////////////////////////////////////////////////////////////////\
-//                                                                   /|
-//  Unreal Tournament IRC Reporter - Copyright © Thomas Pajor, 2001  /|
-//  ---------------------------------------------------------------  /|
-//  Programmed by [Mv]DarkViper, Enhanced by Rush (rush@u.one.pl)    /|
-//  And given spice by Altgamer (alt@rivalflame.com)                 /|
-//  Gambino Edition by sn3p (snap@gambino.nl)                        /|
-//                                                                   /|
-///////////////////////////////////////////////////////////////////////
-
-class DiscordReporterStats_BT expands DiscordReporterStats_TDM;
+class DiscordReporterStats_BT extends DiscordReporterStats_TDM;
 
 // Variables to store the Name & Type of the Last Frag (& the message)
 var string lastMessage, lastKiller, lastVictim;
@@ -18,103 +8,106 @@ var bool isStateDropping;
 var string DiedMsg;
 
 // Override InLocalizedMessage Function
-function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
+function InLocalizedMessage(class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject)
 {
   local string sHigh, Player_1, Player_2, TmpStr;
   local int Team;
   sHigh = "";
 
-  // *** SUDDEN DEATH / TEAM CHANGE ***
+  // SUDDEN DEATH / TEAM CHANGE
   if (ClassIsChildOf(Message, class'BotPack.DeathMatchMessage'))
+  {
+    switch(Switch)
     {
-      switch(Switch)
-	{
-	  // Overtime :)
-	case 0:
-	  SendIRCMessage(GetColoredMessage("", conf.colHigh, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
-	  return;
-	  // Team Change
-	case 3:
-	  SendIRCMessage(GetColoredMessage("* ", conf.colGen, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
-	  return;
-	}
+      // Overtime :)
+      case 0:
+        SendMessage(GetColoredMessage("", conf.colHigh, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+        return;
+      // Team Change
+      case 3:
+        SendMessage(GetColoredMessage("", conf.colGen, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+        return;
     }
+  }
 
-  // *** FRAG Messages ***
+  // FRAG Messages
   if (ClassIsChildOf(Message, class'BotPack.DeathMessagePlus'))
+  {
+    // Save our message (maybe we need it l8er)
+    if (RelatedPRI_2 == None)
     {
-      // Save our message (maybe we need it l8er)
-	if (RelatedPRI_2 == None)
-	{
-	      lastVictim = RelatedPRI_1.PlayerName;
-	      Team = RelatedPRI_1.Team;
-	}
-	else
-	{
-	      lastVictim = RelatedPRI_2.PlayerName;
-	      Team = RelatedPRI_2.Team;
-	}
-      lastSwitch = Switch;
+      lastVictim = RelatedPRI_1.PlayerName;
+      Team = RelatedPRI_1.Team;
+    }
+    else
+    {
+      lastVictim = RelatedPRI_2.PlayerName;
+      Team = RelatedPRI_2.Team;
+    }
 
-      if (RelatedPRI_2 != None && RelatedPRI_1 != None)
-      {
-         if (RelatedPRI_2.Team != RelatedPRI_1.Team)
-	      lastMessage = GetColoredMessage("", conf.colHead, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-      }
+    lastSwitch = Switch;
+
+    if (RelatedPRI_2 != None && RelatedPRI_1 != None)
+    {
+      if (RelatedPRI_2.Team != RelatedPRI_1.Team)
+        lastMessage = GetColoredMessage("", conf.colHead, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+    }
+    else
+    {
+      TmpStr = Message.static.GetString(Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+
+      if (InStr(TmpStr, " was slimed.") != -1 || InStr(TmpStr, " was incinerated.") != -1)
+        lastMessage = GetColoredMessage("", conf.colHead, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
       else
-      {
-         TmpStr = Message.static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-	 if (InStr(TmpStr, " was slimed.") != -1 || InStr(TmpStr, " was incinerated.") != -1)
-	   lastMessage = GetColoredMessage("", conf.colHead, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-	 else
-	   lastMessage = conf.colHead$GetTeamColor(Team)$lastVictim$ircClear$conf.ColHead@"has died !";
-      }
-      DiedMsg = lastMessage;
-      SetTimer(0.05, false);
-      SetTimer(3, TRUE);
-      return;
+        lastMessage = conf.colHead $ GetTeamColor(Team) $ lastVictim @ "has died !";
     }
 
-  // *** CTF Messages ***
+    DiedMsg = lastMessage;
+    SetTimer(0.05, false);
+    SetTimer(3, TRUE);
+    return;
+  }
+
+  // CTF Messages
   if (ClassIsChildOf(Message, class'BotPack.CTFMessage'))
+  {
+    switch (Switch)
     {
-      switch (Switch)
-	{
-	  // The Flag has been captured!
-	case 0:
-	  SendIRCMessage(conf.colGen$ircUnderline$Message.static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
-	  SendScoreLine("New Score: ");
-	  return;
-	  // Dropped the Flag / Just store the Message to get it shown @ the next frag
-	case 6:
-          SendIRCMessage(conf.colGen$ircUnderline$Message.static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
-	  break;
-	case 2:
-	  isStateDropping = TRUE;
-	  droppedName = RelatedPRI_1.PlayerName;
-	  droppedMessage = conf.colGen$Message.static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-	  break;
-	default:
-	  SendIRCMessage(conf.colGen$Message.static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
-	  break;
-	}
+      // The Flag has been captured!
+      case 0:
+        SendMessage(conf.colGen$ircUnderline$Message.static.GetString(Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+        SendScoreLine("New Score: ");
+        return;
+      // Dropped the Flag / Just store the Message to get it shown @ the next frag
+      case 6:
+        SendMessage(conf.colGen$ircUnderline$Message.static.GetString(Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+        break;
+      case 2:
+        isStateDropping = TRUE;
+        droppedName = RelatedPRI_1.PlayerName;
+        droppedMessage = conf.colGen$Message.static.GetString(Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+        break;
+      default:
+        SendMessage(conf.colGen$Message.static.GetString(Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+        break;
     }
-    if (Switch==0)
-    {
-	  DiedMsg="";
-	  droppedMessage="";
-    	  SendIRCMessage(conf.colGen$ircUnderline$GetTeamColor(RelatedPRI_1.Team)$RelatedPRI_1.PlayerName$ircClear$conf.ColHead$ircUnderline@"has captured the flag !"$ircClear$conf.ColHead$" (Best Time: "$ProcessScore(RelatedPRI_1.Score)$")");
-	  SendScoreLine("New Score: ");
-	  return;
-    }
-}
+  }
 
+  if (Switch==0)
+  {
+    DiedMsg="";
+    droppedMessage="";
+    SendMessage(conf.colGen$ircUnderline$GetTeamColor(RelatedPRI_1.Team)$RelatedPRI_1.PlayerName$conf.ColHead$ircUnderline@"has captured the flag !"$conf.ColHead$" (Best Time: "$ProcessScore(RelatedPRI_1.Score)$")");
+    SendScoreLine("New Score: ");
+    return;
+  }
+}
 
 // Override Game Over event
 function OnGameOver()
 {
-  SendIRCMessage(conf.colHigh$"Game has ended!");
-  SendScoreBoard("** Final Score Information:", TRUE);
+  SendMessage("Game has ended!");
+  SendScoreBoard("Final Score Information:", TRUE);
 }
 
 // Override Score Details
@@ -124,27 +117,27 @@ function OnScoreDetails()
   local CTFFlag lFLAG;
   local int i;
 
-  SendScoreBoard("** Current Score: ");
+  SendScoreBoard("Current Score:");
 
   // Search for Flag Carriers and spamm them
   for (i = 0; i < 32; i++)
     {
       if (TGRI.PRIArray[i] == none || TGRI.PRIArray[i].bIsSpectator)
-      	continue;
+        continue;
       lPRI = TGRI.PRIArray[i];
       if (bestPRI == None)
-      	bestPRI = lPRI;
+        bestPRI = lPRI;
       else if ( !bBTScores && bestPRI.Score <= lPRI.Score )
-	bestPRI = lPRI;
+  bestPRI = lPRI;
       else if ( bBTScores && bestPRI.Score >= lPRI.Score )
         bestPRI = lPRI;
 
       lFLAG = CTFFlag(lPRI.HasFlag);
       if (lFLAG != none)
-	    SendIRCMessage(">> "$conf.colHead$lPRI.PlayerName$" has the "$conf.sTeams[lFLAG.Team]$" flag!");
+      SendMessage(">> "$conf.colHead$lPRI.PlayerName$" has the "$conf.sTeams[lFLAG.Team]$" flag!");
     }
   if (bBTScores && bestPRI.Score!=0)
-	  SendIRCMessage(">> " $ conf.colHead $ bestPRI.PlayerName $ " has the best CapTime -"$conf.colHigh$" "$ProcessScore(bestPRI.Score)$conf.colHead$" !");
+    SendMessage(">> " $ conf.colHead $ bestPRI.PlayerName $ " has the best CapTime -"$conf.colHigh$" "$ProcessScore(bestPRI.Score)$conf.colHead$" !");
 }
 
 
@@ -152,7 +145,7 @@ function OnScoreDetails()
 function SendScoreLine(string sPreFix)
 {
   local int iScore[4];
-  SendIRCMessage(conf.colGen$sPreFix$GetTeamColor(0)$conf.sTeams[0]$" "$string(int(TeamGamePlus(Level.Game).Teams[0].Score))$ircColor$":"$GetTeamColor(1)$ircBold$ircBold$string(int(TeamGamePlus(Level.Game).Teams[1].Score))$" "$conf.sTeams[1]);
+  SendMessage(conf.colGen$sPreFix$GetTeamColor(0)$conf.sTeams[0]$" "$string(int(TeamGamePlus(Level.Game).Teams[0].Score))$ircColor$":"$GetTeamColor(1)$ircBold$ircBold$string(int(TeamGamePlus(Level.Game).Teams[1].Score))$" "$conf.sTeams[1]);
 }
 
 
@@ -165,60 +158,60 @@ function SendScoreBoard(string sHeadLine, optional bool bTime)
 
   // Head
   if (bTime)
-    SendIRCMessage(" ", bTime);
-  SendIRCMessage(conf.colGen$sHeadLine, bTime);
+    SendMessage(" ", bTime);
+  SendMessage(conf.colGen$sHeadLine, bTime);
 
   // Get Ping & PL 4 ScoreBoard
   for (iT = 0; iT < TeamGamePlus(Level.Game).MaxTeams; iT++)
     {
       for (i = 0; i < 32; i++)
-	{
-	  lPRI = TGRI.PRIArray[i];
-	  if ((lPRI != none) && (!lPRI.bIsSpectator) && (lPRI.Team == iT) && !lPRI.bIsABot)
-	    {
-	      iPingsArray[iT] += lPRI.Ping;
-	      iPLArray[iT] += lPRI.PacketLoss;
-	    }
-	}
+  {
+    lPRI = TGRI.PRIArray[i];
+    if ((lPRI != none) && (!lPRI.bIsSpectator) && (lPRI.Team == iT) && !lPRI.bIsABot)
+      {
+        iPingsArray[iT] += lPRI.Ping;
+        iPLArray[iT] += lPRI.PacketLoss;
+      }
+  }
     }
 
   // Spamm out our stuff :)
-  SendIRCMessage(conf.colHead$PostPad("Team-Name", 22, " ") $ "| " $ PrePad(sScoreStr, 5, " ") $ " | " $ PrePad("Ping", 4, " ") $ " | " $ PrePad("PL", 4, " ") $ " | " $ PrePad("PPL", 3, " ") $ " |", bTime);
+  SendMessage(conf.colHead$PostPad("Team-Name", 22, " ") $ "| " $ PrePad(sScoreStr, 5, " ") $ " | " $ PrePad("Ping", 4, " ") $ " | " $ PrePad("PL", 4, " ") $ " | " $ PrePad("PPL", 3, " ") $ " |", bTime);
   for (iT = 0; iT < TeamGamePlus(Level.Game).MaxTeams; iT++)
     {
       iPingsArray[iT] = iPingsArray[iT] / TeamGamePlus(Level.Game).Teams[iT].Size;
       iPLArray[iT]    = iPLArray[iT] / TeamGamePlus(Level.Game).Teams[iT].Size;
-      SendIRCMessage("> "$GetTeamColor(iT)$PostPad(conf.sTeams[iT], 20, " ") $ conf.colHead $ "| " $ GetTeamColor(iT) $ PrePad(string(int(TeamGamePlus(Level.Game).Teams[iT].Score)), 5, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(string(iPingsArray[iT]), 4, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(string(iPLArray[iT])$"%", 4, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(TeamGamePlus(Level.Game).Teams[iT].Size, 3, " ") $ conf.colHead $ " |", bTime);
+      SendMessage("> "$GetTeamColor(iT)$PostPad(conf.sTeams[iT], 20, " ") $ conf.colHead $ "| " $ GetTeamColor(iT) $ PrePad(string(int(TeamGamePlus(Level.Game).Teams[iT].Score)), 5, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(string(iPingsArray[iT]), 4, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(string(iPLArray[iT])$"%", 4, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(TeamGamePlus(Level.Game).Teams[iT].Size, 3, " ") $ conf.colHead $ " |", bTime);
     }
 
   if (bTime)
-    SendIRCMessage(" ", bTime);
+    SendMessage(" ", bTime);
 }
 
 function string ProcessScore(int Score)
 {
-	local int intScore, secs;
-	local string sec;
+  local int intScore, secs;
+  local string sec;
 
-	if (bBTScores)
-	{
-		if (Score==0)
-			return "0:00";
-		else
-		{
-			intScore = 2000 - Score;
-			if ( intScore > 1 && intScore < 1999 )
-			{
-				secs = int(intScore % 60);
-				if ( secs < 10 )
-	                  		sec = "0" $string(secs);
-	            		else
-					sec = "" $string(secs);
-				return string(intScore / 60) $":" $sec;
-			}
-		}
-	}
-	return string(Score);
+  if (bBTScores)
+  {
+    if (Score==0)
+      return "0:00";
+    else
+    {
+      intScore = 2000 - Score;
+      if ( intScore > 1 && intScore < 1999 )
+      {
+        secs = int(intScore % 60);
+        if ( secs < 10 )
+                        sec = "0" $string(secs);
+                  else
+          sec = "" $string(secs);
+        return string(intScore / 60) $":" $sec;
+      }
+    }
+  }
+  return string(Score);
 }
 
 // Query of the Current Gameinfo (overridden)
@@ -238,86 +231,90 @@ event Timer()
 {
   local bool bSentDrop, bSentDied;
 
-	if (conf.bSecondaryLink)
-	{
-		if (!Link.bIsConnected || !Link2.bIsConnected)
-			return;
-	}
-  else if (!Link.bIsConnected)
+  // if (conf.bSecondaryLink)
+  // {
+  //   if (!Link.bIsConnected || !Link2.bIsConnected)
+  //     return;
+  // }
+  // else if (!Link.bIsConnected)
+  //   return;
+
+  if (!Link.bIsConnected)
     return;
 
- if (droppedMessage!="")
- {
-   SendIRCMessage(droppedMessage);
-   droppedMessage="";
-   bSentDrop=True;
- }
- if (DiedMsg!="")
- {
-   SendIRCMessage(DiedMsg);
-   DiedMsg="";
-   bSentDied=True;
- }
- if (bSentDrop || bSentDied)
- 	return;
+  if (droppedMessage!="")
+  {
+    SendMessage(droppedMessage);
+    droppedMessage="";
+    bSentDrop=True;
+  }
 
+  if (DiedMsg!="")
+  {
+    SendMessage(DiedMsg);
+    DiedMsg="";
+    bSentDied=True;
+  }
+
+  if (bSentDrop || bSentDied)
+    return;
 
   // Beim ersten durchlauf!
   // ^ wtf?
   if ((iTimerCnt == 0) && (bFirstRun == TRUE))
-    {
-      bFirstRun = FALSE;
-      SendIRCMessage("Mavericks IRC Reporter "$Link.Controller.sVersion, TRUE);
-      SendIRCMessage(conf.colHigh$"*** "$GetGameInfo());
-    }
+  {
+    bFirstRun = FALSE;
+    SendMessage("Discord Reporter "$Link.Controller.sVersion, TRUE);
+    SendMessage("*** "$GetGameInfo());
+  }
 
   // Advertising
   if (!bDoneAd && conf.bAdvertise)
+  {
+    if (TGRI.Timelimit == 0)
     {
-      if (TGRI.Timelimit == 0)
-	{
-	  if (TGRI.ElapsedTime > 0)
-	    {
-	      OnAdvertise();
-	    }
-	}
-      else
-	{
-	  //BroadcastMessage(string(TGRI.Timelimit)$" - "$string(TGRI.RemainingTime)$" = "$string(TGRI.Timelimit - TGRI.RemainingTime));
-	  if ((TGRI.Timelimit * 60 - TGRI.RemainingTime) > 0)
-	    {
-	      OnAdvertise();
-	    }
-	}
+      if (TGRI.ElapsedTime > 0)
+      {
+        OnAdvertise();
+      }
     }
+    else
+    {
+      //BroadcastMessage(string(TGRI.Timelimit)$" - "$string(TGRI.RemainingTime)$" = "$string(TGRI.Timelimit - TGRI.RemainingTime));
+      if ((TGRI.Timelimit * 60 - TGRI.RemainingTime) > 0)
+      {
+        OnAdvertise();
+      }
+    }
+  }
 
   // Map Info (Mapname/Gamename/ServerURL)
   if ((iTimerCnt % xGInfoDelay) == 0)
-    {
-      if ((TGRI.NumPlayers > 0) && (iTimerCnt != 0))
-	SendIRCMessage(conf.colHigh $ "*** " $ GetGameInfo());
-    }
+  {
+    if ((TGRI.NumPlayers > 0) && (iTimerCnt != 0))
+      SendMessage("*** " $ GetGameInfo());
+  }
 
   // Detailed Game Information
   if (((iTimerCnt % xGDetailsDelay) == 0) && (iTimerCnt > 0) && (TGRI.NumPlayers > 0))
-    {
-      if (!Level.Game.bGameEnded)
-	OnGameDetails();
-    }
+  {
+    if (!Level.Game.bGameEnded)
+      OnGameDetails();
+  }
 
   // Detailed Score Information
   if (((iTimerCnt % xSDetailsDelay) == 0) && (iTimerCnt > 0) && (TGRI.NumPlayers > 0))
-    {
-      if (!Level.Game.bGameEnded)
-	OnScoreDetails();
-    }
+  {
+    if (!Level.Game.bGameEnded)
+      OnScoreDetails();
+  }
 
   // Check whether the game is over or not
   if (Level.Game.bGameEnded && (!bGameOver))
-    {
-      bGameOver = TRUE;
-      OnGameOver();
-    }
+  {
+    bGameOver = TRUE;
+    OnGameOver();
+  }
 
   // Increase Counter 4 Timer
   if (iTimerCnt > 3600)
@@ -342,21 +339,24 @@ function QueryPlayers(string sNick)
       iNum = 0;
       sMessage = "";
       foreach AllActors(class'TournamentPlayer', lPlr)
-	{
-	  lPRI = lPlr.PlayerReplicationInfo;
-	  if (lPRI.Team == iT) {
-	    if (iNum > 0) sMessage = sMessage$", ";
-	    else sMessage = conf.colHead$conf.sTeams[iT]$": "$ircColor;
-	    if (Link.bUTGLEnabled)
-	      sMessage = sMessage $ GetTeamColor(iT) $ ircBold $ ircBold $ lPRI.PlayerName $ " - Login: "$ Spec.ServerMutate("getlogin "$lPRI.PlayerName) $ conf.colBody $ " ("$ProcessScore(lPRI.Score)$")";
-	    else
-	      sMessage = sMessage $ GetTeamColor(iT) $ ircBold $ ircBold $ lPRI.PlayerName $ conf.colBody $ " ("$ProcessScore(lPRI.Score)$")";
-	    iNum++;
-	    iAll++;
-	  }
-	}
+  {
+    lPRI = lPlr.PlayerReplicationInfo;
+    if (lPRI.Team == iT) {
+      if (iNum > 0) sMessage = sMessage$", ";
+      else sMessage = conf.colHead$conf.sTeams[iT]$": "$ircColor;
+
+      // if (Link.bUTGLEnabled)
+      //   sMessage = sMessage $ GetTeamColor(iT) $ ircBold $ ircBold $ lPRI.PlayerName $ " - Login: "$ Spec.ServerMutate("getlogin "$lPRI.PlayerName) $ conf.colBody $ " ("$ProcessScore(lPRI.Score)$")";
+      // else
+      //   sMessage = sMessage $ GetTeamColor(iT) $ ircBold $ ircBold $ lPRI.PlayerName $ conf.colBody $ " ("$ProcessScore(lPRI.Score)$")";
+      sMessage = sMessage $ GetTeamColor(iT) $ ircBold $ ircBold $ lPRI.PlayerName $ conf.colBody $ " ("$ProcessScore(lPRI.Score)$")";
+
+      iNum++;
+      iAll++;
+    }
+  }
       if (iNum > 0)
-	Link.SendNotice(sNick, ">> "$sMessage);
+  Link.SendNotice(sNick, ">> "$sMessage);
     }
   if (iAll == 0)
     Link.SendNotice(sNick, ">> No players on server!");
@@ -364,8 +364,8 @@ function QueryPlayers(string sNick)
 
 defaultproperties
 {
-     sScoreStr="Caps"
-     xGInfoDelay=240
-     xGDetailsDelay=300
-     xSDetailsDelay=180
+   sScoreStr="Caps"
+   xGInfoDelay=240
+   xGDetailsDelay=300
+   xSDetailsDelay=180
 }

@@ -1,23 +1,11 @@
-//////////////////////////////////////////////////////////////////////\
-//                                                                   /|
-//  Unreal Tournament IRC Reporter - Copyright © Thomas Pajor, 2001  /|
-//  ---------------------------------------------------------------  /|
-//  Programmed by [Mv]DarkViper, Enhanced by Rush (rush@u.one.pl)    /|
-//  And given spice by Altgamer (alt@rivalflame.com)                 /|
-//  Gambino Edition by sn3p (snap@gambino.nl)                        /|
-//                                                                   /|
-///////////////////////////////////////////////////////////////////////
+class DiscordReporter extends Actor;
 
-class DiscordReporter expands Actor;
-
-// Declare some Variable stuff
 var bool bInitialized;
 var string sVersion, sBuild;
 var DiscordReporterConfig conf;
-var DiscordReporterIRCLink IRCLink;
-var DiscordReporterIRCLink2 IRCLink2;
+var DiscordReporterLink Link;
 var DiscordReporterSpectator Spectator;
-var DiscordReporterMutator Mut;
+// var DiscordReporterMutator Mut;
 var GameReplicationInfo GRI;
 
 // Event: PreBeginPlay
@@ -29,15 +17,15 @@ event PreBeginPlay()
   bInitialized = TRUE;
 
   // Load...
-  conf = Spawn(class'DiscordReporterXR3_Gambino.DiscordReporterConfig');
+  conf = Spawn(class'DiscordReporter.DiscordReporterConfig');
   LoadTeamNames();
-  CheckIRCColors();
+  // CheckIRCColors();
 
   // Start Reporter Engine
   conf.SaveConfig();
-  Log("+-------------------------------------------+");
-  Log("| [Mv] Reporter 3.0.0 (XR3) GAMBINO EDITION |");
-  Log("+-------------------------------------------+");
+  Log("+-----------------------+");
+  Log("| Discord Reporter 0.1b |");
+  Log("+-----------------------+");
   InitReporter();
 }
 
@@ -46,46 +34,43 @@ function InitReporter()
 {
   local Mutator M;
 
-  // Start IRC Link
-  if (IRCLink == none)
-    IRCLink = Spawn(class'DiscordReporterXR3_Gambino.DiscordReporterIRCLink');
-  if (IRCLink2 == none && conf.bSecondaryLink)
-    IRCLink2 = Spawn(class'DiscordReporterXR3_Gambino.DiscordReporterIRCLink2');
-  if (IRCLink == none || (IRCLink2 == none && conf.bSecondaryLink))
+  // Start Discord Link
+  if (Link == none)
+    Link = Spawn(class'DiscordReporter.DiscordReporterLink');
+
+  if (Link == none)
   {
-    Log("++ [Mv]: Error Spawning IRC Link Class!");
+    Log("++ Error Spawning Discord Reporter Link Class!");
     return;
   }
 
   if (conf.bEnabled)
-    {
-      Log("++ [Mv]: Starting Connection Process...");
-      IRCLink.Connect(self, conf);
-      if (conf.bSecondaryLink)
-	IRCLink2.Connect(self, conf);
-    }
+  {
+    Log("++ Starting Connection Process...");
+    Link.Connect(self, conf);
+  }
 
   if (Spectator == None)
-    Spectator = Level.Spawn(class'DiscordReporterXR3_Gambino.DiscordReporterSpectator');
+    Spectator = Level.Spawn(class'DiscordReporter.DiscordReporterSpectator');
 
-  Level.Game.BaseMutator.AddMutator(Level.Game.Spawn(class'DiscordReporterMutator'));
-  M = Level.Game.BaseMutator;
+  // Level.Game.BaseMutator.AddMutator(Level.Game.Spawn(class'DiscordReporterMutator'));
+  // M = Level.Game.BaseMutator;
 
-  While (M.NextMutator != None)
-  {
-        if (InStr(string(M.Class),"DiscordReporterMutator") != -1)
-       		break;
-       	else
-       		M = M.NextMutator;
-  }
-  Mut = DiscordReporterMutator(M);
-  Mut.Controller = self;
-  Mut.conf = conf;
-  Mut.Link = IRCLink;
-  Mut.Link2 = IRCLink2;
-  Spectator.Engage(Self, IRCLink, IRCLink2);
+  // While (M.NextMutator != None)
+  // {
+  //   if (InStr(string(M.Class),"DiscordReporterMutator") != -1)
+  //     break;
+  //   else
+  //     M = M.NextMutator;
+  // }
+
+  // Mut = DiscordReporterMutator(M);
+  // Mut.Controller = self;
+  // Mut.conf = conf;
+  // Mut.Link = Link;
+
+  Spectator.Engage(Self, Link);
 }
-
 
 // FUNCTION: Load the Team Names
 function LoadTeamNames()
@@ -100,25 +85,12 @@ function LoadTeamNames()
     conf.sTeams[1] = conf.teamBlue;
   conf.sTeams[2] = conf.teamGreen;
   conf.sTeams[3] = conf.teamGold;
-}
 
-function CheckIRCColors()
-{
-  if (Asc(conf.colGen) != 3) conf.colGen = "."$conf.colGen;
-  if (Asc(conf.colHead) != 3) conf.colHead = "."$conf.colHead;
-  if (Asc(conf.colBody) != 3) conf.colBody = "."$conf.colBody;
-  if (Asc(conf.colTime) != 3) conf.colTime = "."$conf.colTime;
-  if (Asc(conf.colHigh) != 3) conf.colHigh = "."$conf.colHigh;
-
-  if (Asc(conf.colRed) != 3) conf.colRed = "."$conf.colRed;
-  if (Asc(conf.colBlue) != 3) conf.colBlue = "."$conf.colBlue;
-  if (Asc(conf.colGreen) != 3) conf.colGreen = "."$conf.colGreen;
-  if (Asc(conf.colGold) != 3) conf.colGold = "."$conf.colGold;
   conf.SaveConfig();
 }
 
 defaultproperties
 {
-     sVersion="3.0.2 (XR3) Gambino Edition"
-     sBuild="01/23/2013"
+  sVersion="0.1b"
+  sBuild="05/06/2017"
 }

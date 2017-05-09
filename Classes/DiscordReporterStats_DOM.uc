@@ -1,20 +1,10 @@
-//////////////////////////////////////////////////////////////////////\
-//                                                                   /|
-//  Unreal Tournament IRC Reporter - Copyright © Thomas Pajor, 2001  /|
-//  ---------------------------------------------------------------  /|
-//  Programmed by [Mv]DarkViper, Enhanced by Rush (rush@u.one.pl)    /|
-//  And given spice by Altgamer (alt@rivalflame.com)                 /|
-//  Gambino Edition by sn3p (snap@gambino.nl)                        /|
-//                                                                   /|
-///////////////////////////////////////////////////////////////////////
-
-class DiscordReporterStats_DOM expands DiscordReporterStats_TDM;
+class DiscordReporterStats_DOM extends DiscordReporterStats_TDM;
 
 var string lastMessage, lastKiller, lastVictim;
 var int lastSwitch;
 
 // Override InLocalizedMessage Function
-function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
+function InLocalizedMessage(class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject)
 {
   local string sHigh, Player_1, Player_2, sMessage, slt, sgt;
   local int i, iNum;
@@ -28,11 +18,11 @@ function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, o
 	{
 	  // Overtime :)
 	case 0:
-	  SendIRCMessage(GetColoredMessage("", conf.colHigh, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+	  SendMessage(GetColoredMessage("", conf.colHigh, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
 	  return;
 	  // Team Change
 	case 3:
-	  SendIRCMessage(GetColoredMessage("* ", conf.colGen, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+	  SendMessage(GetColoredMessage("* ", conf.colGen, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
 	  return;
 	}
     }
@@ -41,8 +31,8 @@ function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, o
   if (ClassIsChildOf(Message, class'BotPack.FirstBloodMessage'))
     {
       if (RelatedPRI_1.PlayerName == lastKiller)
-	SendIRCMessage(lastMessage);
-      SendIRCMessage(GetColoredMessage("", conf.colHigh, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+	SendMessage(lastMessage);
+      SendMessage(GetColoredMessage("", conf.colHigh, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
     }
 
   // *** FRAG Messages ***
@@ -85,7 +75,7 @@ function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, o
 	      iNum++;
 	    }
 	}
-      SendIRCMessage(conf.colHead$"Control Points Updated: "$sMessage);
+      SendMessage(conf.colHead$"Control Points Updated: "$sMessage);
     }
 }
 
@@ -96,7 +86,7 @@ function OnScoreDetails()
   local PlayerReplicationInfo lPRI, bestPRI;
   local int iPingsArray[4], iPLArray[4];
 
-  SendIRCMessage(conf.colGen$"** Team Status Information:");
+  SendMessage(conf.colGen$"** Team Status Information:");
 
   // Get the best PRI and save Ping & PL 4 ScoreBoard
   for (iT = 0; iT < TeamGamePlus(Level.Game).MaxTeams; iT++)
@@ -119,14 +109,14 @@ function OnScoreDetails()
     }
 
   // Spamm out our stuff :)
-  SendIRCMessage(conf.colHead$PostPad("Team-Name", 22, " ") $ "| " $ PrePad(sScoreStr, 5, " ") $ " | " $ PrePad("Ping", 4, " ") $ " | " $ PrePad("PL", 4, " ") $ " | " $ PrePad("PPL", 3, " ") $ " |");
+  SendMessage(conf.colHead$PostPad("Team-Name", 22, " ") $ "| " $ PrePad(sScoreStr, 5, " ") $ " | " $ PrePad("Ping", 4, " ") $ " | " $ PrePad("PL", 4, " ") $ " | " $ PrePad("PPL", 3, " ") $ " |");
   for (iT = 0; iT < TeamGamePlus(Level.Game).MaxTeams; iT++)
     {
       iPingsArray[iT] = iPingsArray[iT] / TeamGamePlus(Level.Game).Teams[iT].Size;
       iPLArray[iT]    = iPLArray[iT] / TeamGamePlus(Level.Game).Teams[iT].Size;
-      SendIRCMessage(">> "$GetTeamColor(iT)$PostPad(conf.sTeams[iT], 20, " ") $ conf.colHead $ "| " $ GetTeamColor(iT) $ PrePad(string(int(TeamGamePlus(Level.Game).Teams[iT].Score)), 5, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(string(iPingsArray[iT]), 4, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(string(iPLArray[iT])$"%", 4, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(TeamGamePlus(Level.Game).Teams[iT].Size, 3, " ") $ conf.colHead $ " |");
+      SendMessage(">> "$GetTeamColor(iT)$PostPad(conf.sTeams[iT], 20, " ") $ conf.colHead $ "| " $ GetTeamColor(iT) $ PrePad(string(int(TeamGamePlus(Level.Game).Teams[iT].Score)), 5, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(string(iPingsArray[iT]), 4, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(string(iPLArray[iT])$"%", 4, " ") $ conf.colHead $ " | " $ conf.colBody $ PrePad(TeamGamePlus(Level.Game).Teams[iT].Size, 3, " ") $ conf.colHead $ " |");
     }
-  SendIRCMessage(conf.colHead$"Best Player is"$GetTeamColor(bestPRI.Team)$" "$bestPRI.PlayerName$conf.colHead$" with"$conf.colHigh$" "$string(int(bestPRI.Score))$conf.colHead$" Frags!");
+  SendMessage(conf.colHead$"Best Player is"$GetTeamColor(bestPRI.Team)$" "$bestPRI.PlayerName$conf.colHead$" with"$conf.colHigh$" "$string(int(bestPRI.Score))$conf.colHead$" Frags!");
 }
 
 defaultproperties

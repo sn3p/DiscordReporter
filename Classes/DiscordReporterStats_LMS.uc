@@ -1,13 +1,3 @@
-//////////////////////////////////////////////////////////////////////\
-//                                                                   /|
-//  Unreal Tournament IRC Reporter - Copyright © Thomas Pajor, 2001  /|
-//  ---------------------------------------------------------------  /|
-//  Programmed by [Mv]DarkViper, Enhanced by Rush (rush@u.one.pl)    /|
-//  And given spice by Altgamer (alt@rivalflame.com)                 /|
-//  Gambino Edition by sn3p (snap@gambino.nl)                        /|
-//                                                                   /|
-///////////////////////////////////////////////////////////////////////
-
 class DiscordReporterStats_LMS extends DiscordReporterStats_DM;
 
 // Post Player Statistics
@@ -19,46 +9,53 @@ function PostPlayerStats()
 
   // Get the best PRI
   for (i = 0; i < 32; i++)
-    {
-      lPRI = TGRI.PRIArray[i];
-      if ( lPRI == None)
-        continue;
-      if (bestPRI==None)
-        bestPRI = TGRI.PRIArray[i];
-      if (bestPRI.Score <= lPRI.Score)
-		bestPRI = TGRI.PRIArray[i];
-    }
-   lPRI = bestPRI;
-   if (lPRI == None)
-   	return;
-  SendIRCMessage(" ", TRUE);
-  SendIRCMessage(conf.colGen$"** Final Player Status:", TRUE);
-	if (lPRI.bIsABot)
-		sBot = " (Bot)";
-	else
-		sBot = "";
+  {
+    lPRI = TGRI.PRIArray[i];
+    if (lPRI == None)
+      continue;
+    if (bestPRI == None)
+      bestPRI = TGRI.PRIArray[i];
+    if (bestPRI.Score <= lPRI.Score)
+      bestPRI = TGRI.PRIArray[i];
+  }
 
-	if (Link.bUTGLEnabled)
-		SendIRCMessage("> "$lPRI.PlayerName$sBot$ " - Login: "$Spec.ServerMutate("getlogin "$lPRI.PlayerName)$" is the winner with "$string(int(lPRI.Score))$" lives left!)");
-	else
-		SendIRCMessage("> "$lPRI.PlayerName$sBot$" is the winner with "$string(int(lPRI.Score))$" lives left!");
+  lPRI = bestPRI;
+
+  if (lPRI == None)
+    return;
+
+  // SendMessage(" ", TRUE);
+  SendMessage("Final Player Status:", TRUE);
+
+  if (lPRI.bIsABot)
+    sBot = " (Bot)";
+  else
+    sBot = "";
+
+  // if (Link.bUTGLEnabled)
+  //   SendMessage("> "$lPRI.PlayerName$sBot$ " - Login: "$Spec.ServerMutate("getlogin "$lPRI.PlayerName)$" is the winner with "$string(int(lPRI.Score))$" lives left!)");
+  // else
+  //   SendMessage("> "$lPRI.PlayerName$sBot$" is the winner with "$string(int(lPRI.Score))$" lives left!");
+  SendMessage(bold(lPRI.PlayerName $ sBot) @ "is the winner with" $ string(int(lPRI.Score)) @ "lives left!");
 }
 
 // Query of the Current Gameinfo (overridden)
 function QueryInfo(string sNick)
 {
-	local int StartLives;
-	// Send some nifty stuff to the user!
-	Link.SendNotice(sNick, "*** Detailed Game Information for "$Level.Title$":");
-	if (TGRI.FragLimit == 0)
-		StartLives = 10;
-	else
-		StartLives = TGRI.FragLimit;
-	Link.SendNotice(sNick, ">> Timelimit / Start Lives: "$TGRI.TimeLimit $ " / " $ string(StartLives));
-	if (TGRI.TimeLimit > 0)
-		Link.SendNotice(sNick, ">> Time Remaining: "$GetStrTime(TGRI.RemainingTime));
-	else
-		Link.SendNotice(sNick, ">> Elapsed Time: "$GetStrTime(TGRI.ElapsedTime));
+  local int StartLives;
+  // Send some nifty stuff to the user!
+  Link.SendNotice(sNick, "Detailed Game Information for "$Level.Title$":");
+
+  if (TGRI.FragLimit == 0)
+    StartLives = 10;
+  else
+    StartLives = TGRI.FragLimit;
+
+  Link.SendNotice(sNick, "Timelimit / Start Lives:" @ TGRI.TimeLimit @ "/" @ string(StartLives));
+  if (TGRI.TimeLimit > 0)
+    Link.SendNotice(sNick, "Time Remaining:" @ GetStrTime(TGRI.RemainingTime));
+  else
+    Link.SendNotice(sNick, "Elapsed Time:" @ GetStrTime(TGRI.ElapsedTime));
 }
 
 // Detailed Game Information
@@ -70,25 +67,26 @@ function OnGameDetails()
 
   // Get the best PRI
   for (i = 0; i < 32; i++)
-    {
-      lPRI = TGRI.PRIArray[i];
-      if ( lPRI == None)
-        continue;
-      if (bestPRI==None)
-        bestPRI = TGRI.PRIArray[i];
-      if (bestPRI.Score <= lPRI.Score)
-	bestPRI = TGRI.PRIArray[i];
-    }
+  {
+    lPRI = TGRI.PRIArray[i];
+    if ( lPRI == None)
+      continue;
+    if (bestPRI == None)
+      bestPRI = TGRI.PRIArray[i];
+    if (bestPRI.Score <= lPRI.Score)
+      bestPRI = TGRI.PRIArray[i];
+  }
+
   // Post Stuff
-  SendIRCMessage(" ");
-  SendIRCMessage(conf.colGen$"** Game Details:");
+  // SendMessage(" ");
+  SendMessage("Game Details:");
   if (TGRI.FragLimit == 0)
-  	StartLives = 10;
+    StartLives = 10;
   else
-  	StartLives = TGRI.FragLimit;
-  SendIRCMessage(">> "$conf.colHead$"Timelimit / Start Lives:" $conf.colBody$" "$TGRI.TimeLimit $ " / " $ string(StartLives));
-  SendIRCMessage("> " $ GetTeamColor(bestPRI.Team) $ bestPRI.PlayerName $ conf.colHead $ " is in the lead with"$conf.colHigh$" "$string(int(bestPRI.Score))$conf.colHead$" lives left!");
-  SendIRCMessage(" ");
+    StartLives = TGRI.FragLimit;
+  SendMessage("Timelimit / Start Lives:" @ TGRI.TimeLimit @ "/" @ string(StartLives));
+  SendMessage(bold(bestPRI.PlayerName) @ "is in the lead with" @ string(int(bestPRI.Score)) @ "lives left!");
+  // SendMessage(" ");
 }
 
 // Query of the Current Player List (overridden)
@@ -99,21 +97,29 @@ function QueryPlayers(string sNick)
   local TournamentPlayer lPlr;
   local PlayerReplicationInfo lPRI;
 
-  Link.SendNotice(sNick, "*** Player List for "$Level.Game.GameReplicationInfo.ServerName$":");
+  Link.SendNotice(sNick, "Player List for" @ Level.Game.GameReplicationInfo.ServerName $ ":");
   iNum = 0;
+
   foreach AllActors(class'TournamentPlayer', lPlr)
-    {
-      lPRI = lPlr.PlayerReplicationInfo;
-      if (iNum > 0) sMessage = sMessage $ ", ";
-      if (Link.bUTGLEnabled)
-	sMessage = sMessage $ lPRI.PlayerName $ " - Login: "$Spec.ServerMutate("getlogin "$lPRI.PlayerName)$" ("$string(int(lPRI.Score))$" lives)";
-      else
-	sMessage = sMessage $ lPRI.PlayerName $ " ("$string(int(lPRI.Score))$" lives)";
-      iNum++;
-    }
+  {
+    lPRI = lPlr.PlayerReplicationInfo;
+
+    if (iNum > 0)
+      sMessage = sMessage $ ", ";
+
+    // if (Link.bUTGLEnabled)
+    //   sMessage = sMessage $ lPRI.PlayerName $ " - Login: "$Spec.ServerMutate("getlogin "$lPRI.PlayerName)$" ("$string(int(lPRI.Score))$" lives)";
+    // else
+    //   sMessage = sMessage $ lPRI.PlayerName $ " ("$string(int(lPRI.Score))$" lives)";
+    sMessage = sMessage $ lPRI.PlayerName @ "(" $ string(int(lPRI.Score)) @ "lives)";
+
+    iNum++;
+  }
+
   if (iNum == 0)
     sMessage = "No players on server!";
-  Link.SendNotice(sNick, ">> "$sMessage);
+
+  Link.SendNotice(sNick, sMessage);
 }
 
 defaultproperties

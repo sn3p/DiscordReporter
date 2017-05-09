@@ -1,16 +1,6 @@
-//////////////////////////////////////////////////////////////////////\
-//                                                                   /|
-//  Unreal Tournament IRC Reporter - Copyright © Thomas Pajor, 2001  /|
-//  ---------------------------------------------------------------  /|
-//  Programmed by [Mv]DarkViper, Enhanced by Rush (rush@u.one.pl)    /|
-//  And given spice by Altgamer (alt@rivalflame.com)                 /|
-//  Gambino Edition by sn3p (snap@gambino.nl)                        /|
-//                                                                   /|
-///////////////////////////////////////////////////////////////////////
+class DiscordReporterMutator_1on1 extends Mutator;
 
-class DiscordReporterMutator_1on1 expands Mutator;
-
-var DiscordReporterIRCLink Link;
+var DiscordReporterLink Link;
 var DiscordReporterStats_1on1 Stats;
 var DiscordReporterConfig conf;
 
@@ -21,21 +11,19 @@ function bool HandlePickupQuery(Pawn Other, Inventory item, out byte bAllowPicku
 	PRI = Other.PlayerReplicationInfo;
 
 	if (Item.IsA('ThighPads'))
-		Stats.SendIRCMessage(Stats.GetTeamColor(PRI.Team)$PRI.PlayerName$Stats.ircClear@"has picked up"@conf.colBody$"ThighPads.");
+		Stats.SendMessage(PRI.PlayerName @ "has picked up" @ "ThighPads.");
 	else if (Item.IsA('Armor2'))
-		Stats.SendIRCMessage(Stats.GetTeamColor(PRI.Team)$PRI.PlayerName$Stats.ircClear@"has picked up an"@conf.colGreen$"Armor.");
+		Stats.SendMessage(PRI.PlayerName @ "has picked up an" @ "Armor.");
 	else if (Item.IsA('UT_Jumpboots'))
-		Stats.SendIRCMessage(Stats.GetTeamColor(PRI.Team)$PRI.PlayerName$Stats.ircClear@"has picked up"@conf.colGen$"Jumpboots.");
+		Stats.SendMessage(PRI.PlayerName @ "has picked up" @ "Jumpboots.");
 	else if (Item.IsA('UT_Shieldbelt'))
-		Stats.SendIRCMessage(Stats.GetTeamColor(PRI.Team)$PRI.PlayerName$Stats.ircClear@"has picked up a"@conf.colGold$"Shieldbelt.");
+		Stats.SendMessage(PRI.PlayerName @ "has picked up a" @ "Shieldbelt.");
 	else if (Item.IsA('HealthPack'))
-		Stats.SendIRCMessage(Stats.GetTeamColor(PRI.Team)$PRI.PlayerName$Stats.ircClear@"has picked up a"@conf.colGold$"HealthPack.");
+		Stats.SendMessage(PRI.PlayerName @ "has picked up a" @ "HealthPack.");
 
-	if ( NextMutator != None )
+	if (NextMutator != None)
 		return NextMutator.HandlePickupQuery(Other, item, bAllowPickup);
 }
-
-
 
 defaultproperties
 {
