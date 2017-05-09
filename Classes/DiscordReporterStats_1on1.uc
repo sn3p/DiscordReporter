@@ -8,7 +8,7 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterStats_1on1 expands MvReporterStats_DM;
+class DiscordReporterStats_1on1 expands DiscordReporterStats_DM;
 
 // Override Set Gameinfo :)
 function string SetGameInfo()

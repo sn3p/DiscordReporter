@@ -8,20 +8,20 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterSpectator expands MessagingSpectator;
+class DiscordReporterSpectator expands MessagingSpectator;
 
 // Our master controller
-var MvReporter Controller;
-var MvReporterIRCLink Link;
-var MvReporterIRCLink2 Link2;
-var MvReporterStats Stats;
+var DiscordReporter Controller;
+var DiscordReporterIRCLink Link;
+var DiscordReporterIRCLink2 Link2;
+var DiscordReporterStats Stats;
 var string LastMessage;
 
 // Init Function
-function Engage(MvReporter InController, MvReporterIRCLink InLink, MvReporterIRCLink2 InLink2)
+function Engage(DiscordReporter InController, DiscordReporterIRCLink InLink, DiscordReporterIRCLink2 InLink2)
 {
-  local Class<MvReporterStats> StatsClass;
-  local MvReporterMutator_1on1 Mut1on1;
+  local Class<DiscordReporterStats> StatsClass;
+  local DiscordReporterMutator_1on1 Mut1on1;
   local Actor OutActor;
   local Mutator M;
   local string GameClass;
@@ -37,52 +37,52 @@ function Engage(MvReporter InController, MvReporterIRCLink InLink, MvReporterIRC
     {
       if (Level.Game.MaxPlayers == 2)
         {
-          StatsClass = class'MvReporterStats_1on1';
+          StatsClass = class'DiscordReporterStats_1on1';
           bOneOnOne = True;
         }
       else
-          StatsClass = class'MvReporterStats_DM';
+          StatsClass = class'DiscordReporterStats_DM';
     }
   else if (GameClass == "TEAMGAMEPLUS" || GameClass == "EUTTEAMGAMEPLUS")
     {
-      StatsClass = class'MvReporterStats_TDM';
+      StatsClass = class'DiscordReporterStats_TDM';
     }
   else if (GameClass == "CTFGAME")
     {
-      StatsClass = class'MvReporterStats_CTF';
+      StatsClass = class'DiscordReporterStats_CTF';
     }
   else if (GameClass == "SMARTCTFGAME")
     {
-      StatsClass = class'MvReporterStats_EUT';
+      StatsClass = class'DiscordReporterStats_EUT';
     }
   else if (GameClass == "DOMINATION")
     {
-      StatsClass = class'MvReporterStats_DOM';
+      StatsClass = class'DiscordReporterStats_DOM';
     }
   else if (GameClass == "LASTMANSTANDING")
     {
-      StatsClass = class'MvReporterStats_LMS';
+      StatsClass = class'DiscordReporterStats_LMS';
     }
   else if (Left(string(Level), 3)=="BT-" || Left(string(Level), 5)=="CTF-BT-")
     {
-      StatsClass = class'MvReporterStats_BT';
+      StatsClass = class'DiscordReporterStats_BT';
     }
   else
-      StatsClass = class'MvReporterStats_DM';
+      StatsClass = class'DiscordReporterStats_DM';
 
   // Is 1v1?
   if (Controller.conf.bExtra1on1Stats && (bOneOnOne))
     {
-      Level.Game.BaseMutator.AddMutator(Level.Game.Spawn(class'MvReporterMutator_1on1'));
+      Level.Game.BaseMutator.AddMutator(Level.Game.Spawn(class'DiscordReporterMutator_1on1'));
       M = Level.Game.BaseMutator;
       while (M.NextMutator != None)
         {
-          if (InStr(string(M.Class),"MvReporterMutator_1on1") != -1)
+          if (InStr(string(M.Class),"DiscordReporterMutator_1on1") != -1)
             break;
           else
             M = M.NextMutator;
         }
-      Mut1on1 = MvReporterMutator_1on1(M);
+      Mut1on1 = DiscordReporterMutator_1on1(M);
       Mut1on1.Link = Link;
       Mut1on1.conf = Controller.conf;
     }
@@ -102,7 +102,7 @@ function Engage(MvReporter InController, MvReporterIRCLink InLink, MvReporterIRC
       Link.Link2 = Link2;
       Link.Spec = self;
       if ( Mut1on1 != None )
-      	Mut1on1.Stats = MvReporterStats_1on1(Stats);
+      	Mut1on1.Stats = DiscordReporterStats_1on1(Stats);
       if (Controller.conf.bSecondaryLink)
 	Link.xAFloodDelay = Controller.conf.xAFloodDelay/2;
       else

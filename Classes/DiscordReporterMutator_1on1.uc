@@ -8,11 +8,11 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterMutator_1on1 expands Mutator;
+class DiscordReporterMutator_1on1 expands Mutator;
 
-var MvReporterIRCLink Link;
-var MvReporterStats_1on1 Stats;
-var MvReporterConfig conf;
+var DiscordReporterIRCLink Link;
+var DiscordReporterStats_1on1 Stats;
+var DiscordReporterConfig conf;
 
 function bool HandlePickupQuery(Pawn Other, Inventory item, out byte bAllowPickup)
 {

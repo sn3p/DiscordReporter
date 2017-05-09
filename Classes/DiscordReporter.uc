@@ -8,16 +8,16 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporter expands Actor;
+class DiscordReporter expands Actor;
 
 // Declare some Variable stuff
 var bool bInitialized;
 var string sVersion, sBuild;
-var MvReporterConfig conf;
-var MvReporterIRCLink IRCLink;
-var MvReporterIRCLink2 IRCLink2;
-var MvReporterSpectator Spectator;
-var MvReporterMutator Mut;
+var DiscordReporterConfig conf;
+var DiscordReporterIRCLink IRCLink;
+var DiscordReporterIRCLink2 IRCLink2;
+var DiscordReporterSpectator Spectator;
+var DiscordReporterMutator Mut;
 var GameReplicationInfo GRI;
 
 // Event: PreBeginPlay
@@ -29,7 +29,7 @@ event PreBeginPlay()
   bInitialized = TRUE;
 
   // Load...
-  conf = Spawn(class'MvReporterXR3_Gambino.MvReporterConfig');
+  conf = Spawn(class'DiscordReporterXR3_Gambino.DiscordReporterConfig');
   LoadTeamNames();
   CheckIRCColors();
 
@@ -48,9 +48,9 @@ function InitReporter()
 
   // Start IRC Link
   if (IRCLink == none)
-    IRCLink = Spawn(class'MvReporterXR3_Gambino.MvReporterIRCLink');
+    IRCLink = Spawn(class'DiscordReporterXR3_Gambino.DiscordReporterIRCLink');
   if (IRCLink2 == none && conf.bSecondaryLink)
-    IRCLink2 = Spawn(class'MvReporterXR3_Gambino.MvReporterIRCLink2');
+    IRCLink2 = Spawn(class'DiscordReporterXR3_Gambino.DiscordReporterIRCLink2');
   if (IRCLink == none || (IRCLink2 == none && conf.bSecondaryLink))
   {
     Log("++ [Mv]: Error Spawning IRC Link Class!");
@@ -66,19 +66,19 @@ function InitReporter()
     }
 
   if (Spectator == None)
-    Spectator = Level.Spawn(class'MvReporterXR3_Gambino.MvReporterSpectator');
+    Spectator = Level.Spawn(class'DiscordReporterXR3_Gambino.DiscordReporterSpectator');
 
-  Level.Game.BaseMutator.AddMutator(Level.Game.Spawn(class'MvReporterMutator'));
+  Level.Game.BaseMutator.AddMutator(Level.Game.Spawn(class'DiscordReporterMutator'));
   M = Level.Game.BaseMutator;
 
   While (M.NextMutator != None)
   {
-        if (InStr(string(M.Class),"MvReporterMutator") != -1)
+        if (InStr(string(M.Class),"DiscordReporterMutator") != -1)
        		break;
        	else
        		M = M.NextMutator;
   }
-  Mut = MvReporterMutator(M);
+  Mut = DiscordReporterMutator(M);
   Mut.Controller = self;
   Mut.conf = conf;
   Mut.Link = IRCLink;

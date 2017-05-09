@@ -8,12 +8,12 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterMutator expands Mutator;
+class DiscordReporterMutator expands Mutator;
 
-var MvReporterConfig conf;
-var MvReporterIRCLink Link;
-var MvReporterIRCLink2 Link2;
-var MvReporter Controller;
+var DiscordReporterConfig conf;
+var DiscordReporterIRCLink Link;
+var DiscordReporterIRCLink2 Link2;
+var DiscordReporter Controller;
 
 function Mutate(string MutateString, PlayerPawn Sender)
 {

@@ -8,7 +8,7 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterStats_DOM expands MvReporterStats_TDM;
+class DiscordReporterStats_DOM expands DiscordReporterStats_TDM;
 
 var string lastMessage, lastKiller, lastVictim;
 var int lastSwitch;

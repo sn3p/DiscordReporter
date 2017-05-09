@@ -8,7 +8,7 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterStats_TDM extends MvReporterStats_DM;
+class DiscordReporterStats_TDM extends DiscordReporterStats_DM;
 
 var string sScoreStr;
 

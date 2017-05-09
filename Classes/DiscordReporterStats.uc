@@ -8,15 +8,15 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterStats expands UBrowserBufferedTCPLink;
+class DiscordReporterStats expands UBrowserBufferedTCPLink;
 // Switched class due to error.
-// class MvReporterStats expands Actor;
+// class DiscordReporterStats expands Actor;
 
 // Link to our IRC Interface (IMPORTANT)
-var MvReporterIRCLink Link;
-var MvReporterIRCLink2 Link2;
-var MvReporterSpectator Spec;
-var MvReporterConfig conf;
+var DiscordReporterIRCLink Link;
+var DiscordReporterIRCLink2 Link2;
+var DiscordReporterSpectator Spec;
+var DiscordReporterConfig conf;
 
 var LevelInfo Level;
 var GameReplicationInfo GRI;

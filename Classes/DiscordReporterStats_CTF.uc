@@ -8,10 +8,10 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterStats_EUT expands MvReporterStats_TDM;
+class DiscordReporterStats_CTF expands DiscordReporterStats_TDM;
 
 // Variables to store the Name & Type of the Last Frag (& the message)
-var string lastMessage, lastKiller, newKiller, lastVictim, newVictom, sPlayer_1, sPlayer_2;
+var string lastMessage, lastKiller, lastVictim;
 var int lastSwitch;
 var string droppedName, droppedMessage;
 var bool isStateDropping;
@@ -19,23 +19,32 @@ var bool isStateDropping;
 // Override InLocalizedMessage Function
 function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
 {
-  // Sudden death / Team change
-  if (InStr(Caps(Message), Caps("BotPack.DeathMatchMessage")) != -1)
+  local string sHigh, Player_1, Player_2;
+  sHigh = "";
+
+  // *** SUDDEN DEATH / TEAM CHANGE ***
+  if (ClassIsChildOf(Message, class'BotPack.DeathMatchMessage'))
     {
       switch(Switch)
 	{
 	// 0-overtime, 1-enteredgame, 2-namechange, 3-teamchange, 4-leftgame
+
+	// Overtime :)
 	case 0:
 	  SendIRCMessage(GetColoredMessage("", conf.colHigh, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
 	  return;
+
+	// Team Change
 	case 3:
-	  SendIRCMessage(GetColoredMessage("* ", conf.colGen, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+	  if (!conf.bSilent)
+	    SendIRCMessage(GetColoredMessage("* ", conf.colGen, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
 	  return;
 	}
+      return;
     }
 
-  // First blood message.
-  if (InStr(Caps(Message), Caps("BotPack.FirstBloodMessage")) != -1)
+  // *** FIRST BLOOD MESSAGE ***
+  if (ClassIsChildOf(Message, class'BotPack.FirstBloodMessage') && !conf.bSilent)
     {
       if (RelatedPRI_1.PlayerName == lastKiller)
 	SendIRCMessage(lastMessage);
@@ -43,10 +52,8 @@ function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, o
       return;
     }
 
-
-
-  // Frags
-  if (InStr(Caps(Message), Caps("BotPack.DeathMessagePlus")) != -1)
+  // *** FRAG Messages ***
+  if (InStr(Caps(Message), Caps("BotPack.DeathMessagePlus")) != -1 && !conf.bSilent)
     {
       // _1-killer, _2-victom, optional-weapon class
       // Save our message (maybe we need it l8er)
@@ -68,73 +75,18 @@ function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, o
       return;
     }
 
-
-  // Eut messages
-  if (InStr(Caps(Message), Caps("PCL_DeathMessagePlus")) != -1)
-    {
-      // Save our message (maybe we need it l8er)
-      lastKiller = RelatedPRI_1.PlayerName;
-      lastVictim = RelatedPRI_2.PlayerName;
-      lastSwitch = Switch;
-      lastMessage = GetColoredMessage("", conf.colHead, Message, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-
-      // If we have a flag drop in progress -> post that too
-      // if (isStateDropping && (((droppedName == RelatedPRI_2.PlayerName) && (Related_PRI2 != none)) || ((droppedName == RelatedPRI_1.PlayerName) && (RelatedPRI_2 == none))){
-      if (isStateDropping && (((RelatedPRI_2 == none) && (RelatedPRI_1.PlayerName == droppedName)) || ((RelatedPRI_2.PlayerName == droppedName) && (RelatedPRI_2 != none)) ))
-	{
-	  isStateDropping = FALSE;
-	  SendIRCMessage(lastMessage);
-	}
-
-      // Hotfix for EUT kills
-      if (conf.xDefaultKills)
-        {
-           // Show kills
-           if (InStr(Caps(OptionalObject), Caps("ZP_SuperShockRifle")) != -1)
-             {
-               // Team color
-               if (RelatedPRI_1.Team == 0)
-                   newKiller = conf.colRed$RelatedPRI_1.PlayerName;
-               if (RelatedPRI_1.Team == 1)
-                   newKiller = conf.colBlue$RelatedPRI_1.PlayerName;
-               if (RelatedPRI_1.Team == 2)
-                   newKiller = conf.colGreen$RelatedPRI_1.PlayerName;
-               if (RelatedPRI_1.Team == 3)
-                   newKiller = conf.colGold$RelatedPRI_1.PlayerName;
-
-               if (RelatedPRI_2.Team == 0)
-                   newVictom = conf.colRed$RelatedPRI_2.PlayerName;
-               if (RelatedPRI_2.Team == 1)
-                   newVictom = conf.colBlue$RelatedPRI_2.PlayerName;
-               if (RelatedPRI_2.Team == 2)
-                   newVictom = conf.colGreen$RelatedPRI_2.PlayerName;
-               if (RelatedPRI_2.Team == 3)
-                   newVictom = conf.colGold$RelatedPRI_2.PlayerName;
-
-               // Send
-               if (newVictom != "" && newKiller != "")
-                 SendIRCMessage(newKiller$conf.colHead$" inflicted mortal damage upon "$newVictom$conf.colHead$" with the Enhanced Shock Rifle.");
-             }
-        }
-
-      // Killing Spree ?
-      ProcessKillingSpree(Switch, RelatedPRI_1, RelatedPRI_2);
-      return;
-    }
-
-  // Ctf messages
-  if (InStr(Caps(Message), Caps("BotPack.CTFMessage")) != -1)
+  // *** CTF Messages ***
+  if (ClassIsChildOf(Message, class'BotPack.CTFMessage') && !conf.bSilent)
     {
       switch (Switch)
 	{
-	// 0-captured, 1-returned, 2-dropped, 3-was returned, 4-has flag, 5-auto home, 6-pickup stray
 	// The Flag has been captured!
 	case 0:
 	  SendIRCMessage(conf.colGen$ircUnderline$Message.static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
 	  SendScoreLine("New Score: ");
 	  return;
 
-        // Dropped the Flag / Just store the Message to get it shown @ the next frag
+    // Dropped the Flag / Just store the Message to get it shown @ the next frag
 	case 2:
 	  isStateDropping = TRUE;
 	  droppedName = RelatedPRI_1.PlayerName;
@@ -142,14 +94,14 @@ function InLocalizedMessage( class<LocalMessage> Message, optional int Switch, o
 	  SendIRCMessage(droppedMessage);
 	  return;
 
-        // Default
-        default:
+    // Default
+    default:
 	  SendIRCMessage(conf.colGen$Message.static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
 	  return;
 	}
     }
-    return;
 }
+
 
 // Override Game Over event
 function OnGameOver()
@@ -185,7 +137,6 @@ function OnScoreDetails()
 	    SendIRCMessage(">> "$conf.colHead$lPRI.PlayerName$" has the "$conf.sTeams[lFLAG.Team]$" flag!");
 	}
     }
-
   SendIRCMessage(">> " $ conf.colHead $ bestPRI.PlayerName $ " is in the lead with"$conf.colHigh$" "$string(int(bestPRI.Score))$conf.colHead$" frags!");
 }
 

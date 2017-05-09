@@ -8,7 +8,7 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterStats_LMS extends MvReporterStats_DM;
+class DiscordReporterStats_LMS extends DiscordReporterStats_DM;
 
 // Post Player Statistics
 function PostPlayerStats()

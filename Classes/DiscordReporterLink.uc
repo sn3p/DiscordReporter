@@ -8,7 +8,7 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterIRCLink expands UBrowserBufferedTCPLink;
+class DiscordReporterIRCLink expands UBrowserBufferedTCPLink;
 
 var bool bIsConnected;
 var IpAddr ServerIpAddr;
@@ -17,10 +17,10 @@ var int NickCounter;
 var int iTimerType;
 var bool SwitchLink;
 var localized string FullName;
-var MvReporter Controller;
-var MvReporterConfig conf;
-var MvReporterIRCLink2 Link2;
-var MvReporterSpectator Spec;
+var DiscordReporter Controller;
+var DiscordReporterConfig conf;
+var DiscordReporterIRCLink2 Link2;
+var DiscordReporterSpectator Spec;
 
 var float iFloodCount, iFloodCurrent, xAFloodDelay;
 var string sQueue[32];
@@ -29,7 +29,7 @@ var float GameSpeed;
 var bool bUTGLEnabled;
 
 // FUNCTION: Connect / Startup (INIT)
-function Connect(MvReporter InController, MvReporterConfig InConfig)
+function Connect(DiscordReporter InController, DiscordReporterConfig InConfig)
 {
   local int i;
 

@@ -8,7 +8,7 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterStats_BT expands MvReporterStats_TDM;
+class DiscordReporterStats_BT expands DiscordReporterStats_TDM;
 
 // Variables to store the Name & Type of the Last Frag (& the message)
 var string lastMessage, lastKiller, lastVictim;

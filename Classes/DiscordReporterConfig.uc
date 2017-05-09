@@ -8,7 +8,7 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterConfig expands Actor;
+class DiscordReporterConfig expands Actor;
 var string sTeams[4];
 
 var globalconfig bool   bEnabled;

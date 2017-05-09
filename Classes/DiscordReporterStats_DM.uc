@@ -8,7 +8,7 @@
 //                                                                   /|
 ///////////////////////////////////////////////////////////////////////
 
-class MvReporterStats_DM expands MvReporterStats;
+class DiscordReporterStats_DM expands DiscordReporterStats;
 
 var int iTimerCnt;
 var int xGInfoDelay, xGDetailsDelay, xSDetailsDelay;
