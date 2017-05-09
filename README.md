@@ -2,6 +2,9 @@
 
 This is an Unreal Tournament 99 Server Actor. It sends messages from the game to a [Discord](https://discordapp.com) bot. This is where [discord-reporter](https://github.com/sn3p/discord-reporter) comes into play, a Discord bot that relays the messages to the Discord server and channel of your choice.
 
+Please note that you need [discord-reporter](https://github.com/sn3p/discord-reporter) (Node.js Discord bot) to make commucation between the UT99 server and Discord possible. I haven't found a way to directly communicate with Discord yet :(
+
+This is very WIP and far from finished, so use at your own risk.
 This was originally developed as [MvReporter](https://github.com/sn3p/MvReporter) for IRC.
 
 
